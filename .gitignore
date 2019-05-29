@@ -1,0 +1,15 @@
+# logs
+logs/*
+
+# pyc
+*.pyc
+__pycache__
+
+# python venv
+venv*/*
+.python*
+.vscode
+
+# data
+*.hdf5
+*.jpg
