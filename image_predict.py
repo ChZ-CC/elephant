@@ -1,5 +1,6 @@
 from PIL import Image
 from keras.models import load_model
+from keras import backend
 from urllib.request import urlopen
 from io import BytesIO
 import numpy as np
@@ -10,15 +11,19 @@ LABLE_MAP = {
     4: '大葱', 5: '胡萝卜', 6: '韭菜', 7: '梨', 
     8: '芒果', 9: '番茄', 10: '土豆', 11: '圣女果',
 }
-# 加载模型
-model = load_model('app/models/food_cate.hdf5')
-
 
 def predict(image_url):
     """
     args: image_url: 图片url
     return: (name, confidence)
     """
+
+    # 加载模型
+    try:
+        backend.clear_session()
+        model = load_model('models/food_cate.hdf5')
+    except:
+        return None, None 
 
     # 从url获取图片数据
     try:

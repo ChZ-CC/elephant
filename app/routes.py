@@ -5,7 +5,7 @@ import json
 
 try:
     # from Sentiment_lstm import lstm_predict
-    from app.predict import predict
+    from image_predict import predict
 except Exception as e:
     app.logger.error(e)
 
@@ -24,7 +24,7 @@ def image_predict():
             result, confidence = predict(image_url)
             response_data.update(dict(
                 name=result,
-                num=confidence,
+                num=float(confidence),
             ))
             code, message = 0, 'success' 
         except IOError:
