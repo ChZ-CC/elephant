@@ -5,30 +5,35 @@ import json
 
 try:
     # from Sentiment_lstm import lstm_predict
-    from app.img_recog_pred import food_predict
+    from app.image_recognition.predict import predict
 except Exception as e:
     app.logger.error(e)
 
-@app.route('/ner', methods=['POST'])
-def ner():
-    app.logger.info('request for /ner')
-    data = None
-    # content = request.json.get('content')
-    request_data = json.loads(request.data) 
-    content = request_data.get('content')
-    key = request_data.get('key')
+
+@app.route('/image-predict', methods=['POST'])
+def image_predict():
+    app.logger.info('request for /image-predict')
+    image_url = request.json.get('image_url')
+    key = request.json.get('key')
+    response_data = {}
+
     if key != Config.SECRET_KEY:
         code, message = 401, 'Unauthorized'
-    elif content:
+    elif image_url:
         try:
-            # data = lstm_predict(content)
-            data = food_predict(content)
-            #data = content
+            result, confidence = predict(image_url)
+            response_data.update(dict(
+                name=result,
+                num=confidence,
+            ))
             code, message = 0, 'success' 
+        except IOError:
+            code, message = 403, 'image_url not accessable'
         except Exception as e:
             app.logger.error(e)
             code, message = 503, 'Image Recognition failed'
+        
     else:
-        code, message = 400, 'content required'
+        code, message = 400, 'image_url required'
 
-    return jsonify(code=code, message=message, data=data)
+    return jsonify(code=code, message=message, data=response_data)
