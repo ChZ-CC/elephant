@@ -1,3 +1,4 @@
+from functools import wraps
 from PIL import Image
 from keras.models import load_model
 from keras import backend
@@ -12,6 +13,29 @@ LABLE_MAP = {
     8: '芒果', 9: '番茄', 10: '土豆', 11: '圣女果',
 }
 
+
+class ModelLoadError(Exception):
+    pass
+
+
+def memoize(function):
+    memo = {}
+    @wraps(function)
+    def wrapper(*args):
+        try:
+            return memo[args]
+        except KeyError:
+            rv = function(*args)
+            memo[args] = rv
+            return rv
+    return wrapper
+
+
+@memoize
+def get_model():
+    return load_model('models/food_cate.hdf5')
+
+
 def predict(image_url):
     """
     args: image_url: 图片url
@@ -20,10 +44,9 @@ def predict(image_url):
 
     # 加载模型
     try:
-        backend.clear_session()
-        model = load_model('models/food_cate.hdf5')
+        model = get_model()
     except:
-        return None, None 
+        raise ModelLoadError
 
     # 从url获取图片数据
     try:

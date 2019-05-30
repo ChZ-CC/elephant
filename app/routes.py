@@ -4,8 +4,7 @@ from config import Config
 import json
 
 try:
-    # from Sentiment_lstm import lstm_predict
-    from image_predict import predict
+    from image_predict import predict, ModelLoadError
 except Exception as e:
     app.logger.error(e)
 
@@ -29,6 +28,8 @@ def image_predict():
             code, message = 0, 'success' 
         except IOError:
             code, message = 403, 'image_url not accessable'
+        except ModelLoadError:
+            code, message = 504, 'fail to load model'
         except Exception as e:
             app.logger.error(e)
             code, message = 503, 'Image Recognition failed'
