@@ -1,71 +1,64 @@
-### 算法服务接口文档
-
 #### API
-- 接口：`http://server-host/ner`
-- 方式：POST
-- 参数：content <string>
-- 响应：
 
-	```
+- 接口：`http://host/image-predict`
+
+	```json
+	// post
+	{
+    "image_url": "http://img.9ku.com/geshoutuji/singertuji/2/2293/2293_2.jpg",
+    "key": "SECRET_KEY"
+	}
+
+	// response
 	{
 	    "code": 0,
 	    "data": {
-			"mood_type": "positive",
-			"mood_sub_result": "O",
-			"mood_sub_type": {
-				"A": 0.2,
-				"C": 0.3,
-				"E": 0,
-				"N": 0.1,
-				"O": 0.4
-			}
+				"name": "苹果",
+				"num": 0.999
+				}
 	    },
 	    "message": "success"
 	}	
+	
+	// code:
+	// 0				success	--成功
+	// 401			Unauthorized -- 缺少key
+	// 503			Image Recognition failed -- 模型失败
+	// 400 			image_url required -- 缺少参数
 	```
-	> code: 0 -> success | 401 -> Unauthorized | 503 -> LSTM failed | 400 -> content required 	
 
 #### 算法接口
 
-- function: `Sentiment_lstm.lstm_predict`
-- arguments: `string` <str>
-- return:
+- function: `app/image_prediction/predict.predict`
+- model 目录: `app/models/xxx.hdf5`
 
 	```
-	{
-		"mood_type": "positive",
-		"mood_sub_result": "O",
-		"mood_sub_type": {
-			"A": 0.2,
-			"C": 0.3,
-			"E": 0,
-			"N": 0.1,
-			"O": 0.4
-		}
-	}
+	# 进入项目目录，启动python环境
+	$ cd elephant
+	$ pipenv shell
+
+	# 测试接口
+	(elephant)$ python -m app.predict 		# == python app/predict.py
+	# output 省略一大片提示信息
+	('苹果', 0.61621004)
 	```
 
 ---
 
 **问题**
 
-- flask 环境下调用算法接口，第二次之后报错：
-	```
-	Cannot interpret feed_dict key as Tensor: Tensor Tensor("Placeholder_2:0", shape=(50, 200), dtype=float32) is not an element of this graph.
+1. 直接运行 `python app.predict.py` 可以正确执行，但是在 flask 环境下调用，报错：`Tensor Tensor("dense_6/Softmax:0", shape=(?, 12), dtype=float32) is not an element of this graph.`
+	
+	- 附双生的解决方法：
+		
+		```
+		Cannot interpret feed_dict key as Tensor: Tensor Tensor("Placeholder_2:0", shape=(50, 200), dtype=float32) is not an element of this graph.
 
-	解决办法：
-	keras.backend.clear_session()
-	```
+		解决办法：
+		keras.backend.clear_session()
+		```
 
-- nginx 502 --> 代码 ImportError(ImportError: libcudnn.so.5: cannot open shared object file: No such file or directory) --> cuda 库软的链接错误（symbol link）。解决方法：
+2. 环境问题：
 
-	```
-	# 查看 cudnn 库相关的信息，找到错误的链接
-	$ sudo ldconfig -v | grep "libcudnn"
-	/sbin/ldconfig.real: /usr/local/cuda-8.0/targets/x86_64-linux/lib/libcudnn.so.5 is not a symbolic link
-
-	libcudnn.so.5 -> libcudnn.so.5.1.10
-
-	# 重新建立链接
-	sudo ln -sf /usr/local/cuda-8.0/targets/x86_64-linux/lib/libcudnn.so.5.1.10 /usr/local/cuda-8.0/targets/x86_64-linux/lib/libcudnn.so.5
-	```
+	- ubuntu 14.04 tensorflow 安装成功，运行报错：`ImportError: /lib/x86_64-linux-gnu/libm.so.6: version `GLIBC_2.23' not found (required by /root/.local/share/virtualenvs/elephant-FLgR8YHo/lib/python3.7/site-packages/tensorflow/python/_pywrap_tensorflow_internal.so)`
+	- ubuntu 16.04 tensorflow 安装成功，import 

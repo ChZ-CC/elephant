@@ -15,11 +15,18 @@ model = load_model('app/models/food_cate.hdf5')
 
 
 def predict(image_url):
+    """
+    args: image_url: 图片url
+    return: (name, confidence)
+    """
+
+    # 从url获取图片数据
     try:
         fp = BytesIO(urlopen(image_url).read())
     except:
         raise IOError
     
+    # 格式化图片数据
     img = Image.open(fp)
     img.load()
 
@@ -29,6 +36,7 @@ def predict(image_url):
     img_data = np.asarray(img, dtype='int32')
     img_data = np.expand_dims(img_data, axis=0)
     
+    # 预测，并返回结果
     prediction = model.predict(img_data)
     
     index, confidence = np.argmax(prediction), np.amax(prediction)

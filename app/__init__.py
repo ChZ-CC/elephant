@@ -10,7 +10,7 @@ if not app.debug and not app.testing:
     if not os.path.exists('logs'):
         os.mkdir('logs')
 
-    file_handler = RotatingFileHandler('logs/elephantFridge.log',
+    file_handler = RotatingFileHandler('logs/elephant.log',
                                        maxBytes=10240, backupCount=10)
     file_handler.setFormatter(logging.Formatter(
         '%(asctime)s %(levelname)s: %(message)s [in %(pathname)s:%(lineno)d]'))
@@ -18,6 +18,6 @@ if not app.debug and not app.testing:
     app.logger.addHandler(file_handler)
 
     app.logger.setLevel(logging.INFO)
-    app.logger.info('elephantFridge ner server startup')
+    app.logger.info('elephant server startup')
 
 from app import routes

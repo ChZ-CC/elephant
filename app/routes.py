@@ -5,7 +5,7 @@ import json
 
 try:
     # from Sentiment_lstm import lstm_predict
-    from app.image_recognition.predict import predict
+    from app.predict import predict
 except Exception as e:
     app.logger.error(e)
 
